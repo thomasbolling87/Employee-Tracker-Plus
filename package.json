@@ -1,0 +1,21 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "This app allows a manager to add and remove employees",
+  "main": "server.js",
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Employee-Tracker-Plus"
+  },
+  "author": "Thomas Bolling",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^9.0.2",
+    "inquirer": "^8.0.0",
+    "mysql": "^2.18.1"
+  }
+}
