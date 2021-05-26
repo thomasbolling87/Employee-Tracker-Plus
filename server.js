@@ -3,6 +3,7 @@ const inquirer = require('inquirer');
 const express = require('express');
 const mysql = require('mysql');
 const sequelize = require('./assets/connection');
+const db = require('./assets/db')
 
 // Including the inquirer & express service to be called, and assigning the port number to env
 const app = inquirer();
@@ -76,9 +77,6 @@ function empSetup() {
             case "Delete employee":
                 deleteEmp();
                 break;
-            case "Delete role":
-                deleteRole();
-                break;
             case "Delete department":
                 deleteDept();
                 break; 
@@ -135,16 +133,115 @@ function addEmp() {
         },
         {
             type: "input",
-            message: "Please enter the employee's manager's id:",
-            name: "managerId"
+            message: "Please enter the employee's manager's name:",
+            name: "managerName"
+        },
+        {
+            type: "number",
+            message: "Please enter the manager ID number:",
+            name: "manager_id"
         }
     ])
     .then(function(answer) {
-        conneciton.query("INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)", [answer.firstName, answer.lastName, answer.roleId, answer.managerId],
+        conneciton.query("INSERT INTO employees (first_name, last_name, role_id, manager, manager_id) VALUES (?,?,?,?)", [answer.firstName, answer.lastName, answer.roleId, answer.managerName, answer.managerId],
         function(err, res) {
            if (err)throw (err);
            console.table(res);
            empSetup(); 
+        });
+    });
+};
+
+function addRole() {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "Please add the employee's role:",
+            name: "roleName"
+        },
+        {
+            type: "input",
+            message: "Please enter the salary for this position:",
+            name: "salary"
+        },
+        {
+            type: "list",
+            message: "Please select the department number:",
+            name: "roleId",
+            choices:
+            [
+                "1 Engineering", "2 Accounting", "3 Sales", "4 Human Resources", "5 IT", "6 Management", "7 Advertisement"
+            ]
+        }
+    ])
+    .then(function(answer) {
+        connection.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salary, answer.roleId],
+        function (res, req) {
+            if (err)throw (err);
+            console.table(res);
+            empSetup();     
+        });
+    });
+};
+
+function addDept() {
+    inquirer.prompt({
+        type: "input",
+        message: "Please add the name of the new department:",
+        name: "deptName"
+    })
+    .then(function(answer) {
+        connection.query("INSERT INTO department (name) VALUES (?)", [answer.deptName],
+        function (res, req) {
+            if(err) throw(err);
+            console.table(res);
+            empSetup();
+        });
+    });
+};
+
+function updateEmpRole() {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "Please select an employee to update:",
+            name: "empUpdate"
+        },
+        {
+            type: "input",
+            message: "What is the employee's new position:",
+            name: "empNewRole"
+        }
+    ])
+    .then(function(answer) {
+        connection.query("UPDATE employees SET role_id=? WHERE first_name=?", [ answer.empNewRole, answer.empUpdate],
+        function (res, req) {
+            if(err) throw(err);
+            console.table(res);
+            empSetup();
+        });
+    });
+};
+
+function updateEmpMngr() {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "Please select an employee to update:",
+            name: "empUpdate"
+        },
+        {
+            type: "input",
+            message: "Who is the employee's new manager:",
+            name: "empNewMang"
+        }
+    ])
+    .then(function(answer) {
+        connection.query("UPDATE employees SET manager=? WHERE first_name=?", [answer.empNewMang, answer.empUpdate],
+        function (res, req) {
+            if(err) throw(err);
+            console.table(res);
+            empSetup();
         });
     });
 };
