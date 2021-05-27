@@ -37,8 +37,6 @@ function empSetup() {
                 "Update employee role",
                 "Update employee manager",
                 "Delete employee",
-                "Delete role",
-                "Delete department",
                 "Exit"
             ]
         }
@@ -74,12 +72,6 @@ function empSetup() {
             case "View all employees by manager":
                 viewAllEmpsByMngr();
                 break;
-            case "Delete employee":
-                deleteEmp();
-                break;
-            case "Delete department":
-                deleteDept();
-                break; 
             case "Exit":
                 connection.end();
                 break;
@@ -245,7 +237,6 @@ function updateEmpMngr() {
         });
     });
 };
-
 
 init();
 
