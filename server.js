@@ -1,23 +1,20 @@
 // Adding needed dependencies
 const inquirer = require('inquirer');
-const express = require('express');
 const mysql = require('mysql');
-const sequelize = require('./assets/connection');
-const db = require('./assets/db')
 
-// Including the inquirer & express service to be called, and assigning the port number to env
-const app = inquirer();
-const app = express();
-const app = mysql();
-const PORT = process.env.PORT || 3000;
+// connectToDb to the sql database
+const connectToDb = mysql.createConnection({
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'Password',
+    database: 'employee_tracker_db',
+});
 
-// Parsing data to 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-function init() {
+connectToDb.connect((err) => {
+    if(err) throw(err);
     empSetup();
-}
+});
 
 function empSetup() {
     inquirer.prompt ([
@@ -36,7 +33,6 @@ function empSetup() {
                 "Add department",
                 "Update employee role",
                 "Update employee manager",
-                "Delete employee",
                 "Exit"
             ]
         }
@@ -73,15 +69,15 @@ function empSetup() {
                 viewAllEmpsByMngr();
                 break;
             case "Exit":
-                connection.end();
+                connectToDb.end();
                 break;
         }
     });
 };
 
 function viewAllEmps() {
-    let query = "SELECT * FROM employee";
-    connection.query(query, function(err, res) {
+    let query = "SELECT * FROM employees";
+    connectToDb.query(query, function(err, res) {
         if (err) throw err;
         console.table(res);
         empSetup();
@@ -90,7 +86,7 @@ function viewAllEmps() {
 
 function viewAllEmpsByDept() {
     let query = "SELECT * FROM department";
-    connection.query(query, function(err, res) {
+    connectToDb.query(query, function(err, res) {
         if (err) throw err;
         console.table(res);
         empSetup();
@@ -98,8 +94,8 @@ function viewAllEmpsByDept() {
 }
 
 function viewAllEmpsByRole() {
-    let query = "SELECT * FROM role";
-    connection.query(query, function(err, res) {
+    let query = "SELECT * FROM roles";
+    connectToDb.query(query, function(err, res) {
         if (err) throw err;
         console.table(res);
         empSetup();
@@ -135,7 +131,7 @@ function addEmp() {
         }
     ])
     .then(function(answer) {
-        conneciton.query("INSERT INTO employees (first_name, last_name, role_id, manager, manager_id) VALUES (?,?,?,?)", [answer.firstName, answer.lastName, answer.roleId, answer.managerName, answer.managerId],
+        connectToDb.query("INSERT INTO employees (first_name, last_name, role_id, manager, manager_id) VALUES (?,?,?,?)", [answer.firstName, answer.lastName, answer.roleId, answer.managerName, answer.managerId],
         function(err, res) {
            if (err)throw (err);
            console.table(res);
@@ -167,7 +163,7 @@ function addRole() {
         }
     ])
     .then(function(answer) {
-        connection.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salary, answer.roleId],
+        connectToDb.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salary, answer.roleId],
         function (res, req) {
             if (err)throw (err);
             console.table(res);
@@ -183,7 +179,7 @@ function addDept() {
         name: "deptName"
     })
     .then(function(answer) {
-        connection.query("INSERT INTO department (name) VALUES (?)", [answer.deptName],
+        connectToDb.query("INSERT INTO department (name) VALUES (?)", [answer.deptName],
         function (res, req) {
             if(err) throw(err);
             console.table(res);
@@ -206,7 +202,7 @@ function updateEmpRole() {
         }
     ])
     .then(function(answer) {
-        connection.query("UPDATE employees SET role_id=? WHERE first_name=?", [ answer.empNewRole, answer.empUpdate],
+        connectToDb.query("UPDATE employees SET role_id=? WHERE first_name=?", [ answer.empNewRole, answer.empUpdate],
         function (res, req) {
             if(err) throw(err);
             console.table(res);
@@ -229,7 +225,7 @@ function updateEmpMngr() {
         }
     ])
     .then(function(answer) {
-        connection.query("UPDATE employees SET manager=? WHERE first_name=?", [answer.empNewMang, answer.empUpdate],
+        connectToDb.query("UPDATE employees SET manager=? WHERE first_name=?", [answer.empNewMang, answer.empUpdate],
         function (res, req) {
             if(err) throw(err);
             console.table(res);
@@ -237,10 +233,3 @@ function updateEmpMngr() {
         });
     });
 };
-
-init();
-
-// Initializing the use of sequelize to connect to the database server
-sequelize.sync().true(() => {
-    app.listen(PORT, () => console.log(`Listening to PORT ${PORT}`));
-});
